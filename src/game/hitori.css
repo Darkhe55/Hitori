@@ -1,0 +1,103 @@
+/* ════════════════════════════════════════════════════════════════
+   数壹（Hitori）—— 游戏专用皮肤
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ht-paper: #f7f0dd;
+  --ht-paper-warm: #fbf5e6;
+  --ht-board: #e9e0cc;
+  --ht-board-line: #d4cbb9;
+  --ht-ink: #2c2a25;
+  --ht-black: #2f2b26;
+}
+
+.board-svg .ht-board-bg {
+  fill: var(--ht-board);
+  stroke: var(--ht-board-line);
+  stroke-width: 1.5;
+}
+
+.board-svg .ht-cell {
+  stroke: rgba(44, 42, 37, 0.12);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.board-svg .ht-cell.empty {
+  fill: var(--ht-paper);
+}
+
+.board-svg .ht-cell.white {
+  fill: var(--ht-paper-warm);
+}
+
+.board-svg .ht-cell.black {
+  fill: var(--ht-black);
+  stroke: rgba(0, 0, 0, 0.35);
+}
+
+.board-svg .ht-ring {
+  fill: none;
+  stroke: rgba(44, 42, 37, 0.4);
+  stroke-width: 1.6;
+  pointer-events: none;
+}
+
+.board-svg .ht-number {
+  fill: var(--ht-ink);
+  font-family: var(--mono);
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.board-svg .ht-cell.adjacent {
+  stroke: #b4552b;
+  stroke-width: 2;
+}
+
+.board-svg .ht-error {
+  fill: rgba(194, 59, 46, 0.12);
+  stroke: var(--error);
+  stroke-width: 2.2;
+  stroke-dasharray: 5 3;
+  pointer-events: none;
+}
+
+.board-svg .cell-hit {
+  pointer-events: all;
+}
+
+.board-svg .cell-hit:hover {
+  fill: rgba(31, 111, 92, 0.16);
+}
+
+/* —— 自定义题板：数字色块 —— */
+.custom-cell.r1 {
+  background: hsl(150 32% 90%);
+}
+.custom-cell.r2 {
+  background: hsl(35 44% 90%);
+}
+.custom-cell.r3 {
+  background: hsl(210 36% 90%);
+}
+.custom-cell.r4 {
+  background: hsl(280 28% 91%);
+}
+.custom-cell.r5 {
+  background: hsl(0 36% 91%);
+}
+.custom-cell.r6 {
+  background: hsl(180 30% 89%);
+}
+.custom-cell.r7 {
+  background: hsl(60 36% 90%);
+}
+.custom-cell.r8 {
+  background: hsl(320 26% 91%);
+}
+.custom-cell.r9 {
+  background: hsl(105 26% 90%);
+}
