@@ -45,14 +45,25 @@ for (const e of entries) {
     continue
   }
   const numbers = decodeNumbers(e.board, size)
-  const solution = decodeCells(e.solution, size)
-  if (!numbers || !solution) {
-    console.error(`[check] ${e.id} 数字/解编码非法（board 长度应为 ${size * 2}）`)
+  if (!numbers) {
+    console.error(`[check] ${e.id} 数字编码非法（board 长度应为 ${size * 2}）`)
     errors++
     continue
   }
   if (!numbers.some((n) => n > 0)) {
     console.error(`[check] ${e.id} 题目没有数字`)
+    errors++
+    continue
+  }
+  if (typeof e.solution !== 'string' || e.solution.length === 0) {
+    // 识图导入的大题可能没有参考解：只做结构校验，不参与唯一解审计
+    console.warn(`[check] ${e.id} 没有参考解（识图导入），跳过唯一解校验`)
+    warnings++
+    continue
+  }
+  const solution = decodeCells(e.solution, size)
+  if (!solution) {
+    console.error(`[check] ${e.id} 数字/解编码非法（board 长度应为 ${size * 2}）`)
     errors++
     continue
   }
