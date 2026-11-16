@@ -33,9 +33,71 @@ export class CustomEditor {
   private adapter: GameAdapter
   private editingId: string | null = null
   private editingName: string | null = null
+  /** 多位数输入的临时缓冲（仅 custom.maxValue > 9 时启用） */
+  private pendingDigits = ''
+  private pendingCell = -1
+  private pendingTimer: number | null = null
 
   constructor(adapter: GameAdapter, private host: CustomHost) {
     this.adapter = adapter
+  }
+
+  private maxValue(): number {
+    return this.adapter.custom.maxValue ?? 9
+  }
+
+  // —— 多位数输入（鼠标仍是循环，键盘可键入 10–maxValue） ——
+
+  private clearPendingTimer(): void {
+    if (this.pendingTimer !== null) {
+      clearTimeout(this.pendingTimer)
+      this.pendingTimer = null
+    }
+  }
+
+  private resetPending(): void {
+    this.clearPendingTimer()
+    this.pendingDigits = ''
+    this.pendingCell = -1
+  }
+
+  private commitPending(moveNext: boolean): void {
+    this.clearPendingTimer()
+    const digits = this.pendingDigits
+    if (!digits) return
+    const cell = this.pendingCell
+    this.pendingDigits = ''
+    this.pendingCell = -1
+    const value = Number(digits)
+    if (cell >= 0 && Number.isInteger(value) && value >= 1 && value <= this.maxValue()) {
+      this.setCell(cell, value)
+      if (moveNext) this.moveCursor(1, 0)
+    }
+  }
+
+  private schedulePending(): void {
+    this.clearPendingTimer()
+    this.pendingTimer = window.setTimeout(() => {
+      this.pendingTimer = null
+      this.commitPending(true)
+    }, 700)
+  }
+
+  private typeDigit(digit: string): void {
+    if (this.pendingDigits) {
+      const next = this.pendingDigits + digit
+      if (Number(next) <= this.maxValue() && next.length <= 3) {
+        this.pendingDigits = next
+        this.setCell(this.pendingCell, Number(next))
+        this.schedulePending()
+        return
+      }
+      this.commitPending(true)
+    }
+    this.pendingCell = this.cursor
+    this.pendingDigits = digit
+    this.setCell(this.pendingCell, Number(digit))
+    this.schedulePending()
   }
 
   isOpen(): boolean {
@@ -44,6 +106,7 @@ export class CustomEditor {
   }
 
   close(): void {
+    this.commitPending(false)
     const panel = document.getElementById('custom-editor')
     if (panel) panel.hidden = true
   }
@@ -146,6 +209,7 @@ export class CustomEditor {
 
   /** 把已保存的自定义题读回编辑器；保存时覆盖原 id */
   edit(p: Puzzle): void {
+    this.resetPending()
     const toGrid = this.adapter.custom.toGrid
     if (!toGrid) {
       this.host.message('本游戏不支持编辑自定义题。', 'bad')
@@ -187,6 +251,7 @@ export class CustomEditor {
   }
 
   regen(): void {
+    this.resetPending()
     this.editingId = null
     this.editingName = null
     this.grid = new Array<number | null>(this.w * this.h).fill(null)
@@ -202,15 +267,20 @@ export class CustomEditor {
   handleKey(e: KeyboardEvent): boolean {
     if (!this.isOpen()) return false
     const k = e.key
-
-    if (k >= '0' && k <= '9') {
-      const value = this.adapter.custom.keyForDigit(Number(k))
-      if (value !== undefined) {
-        e.preventDefault()
-        this.setCell(this.cursor, value)
-        this.moveCursor(1, 0)
-        return true
-      }
+    const isDigit = k >= '0' && k <= '9'
+    const mapped = isDigit ? this.adapter.custom.keyForDigit(Number(k)) : undefined
+    // 多位数：maxValue > 9 时，连续按数字可累积（如 1、2 → 12）
+    if (isDigit && this.maxValue() > 9 && typeof mapped === 'number' && mapped > 0) {
+      e.preventDefault()
+      this.typeDigit(k)
+      return true
+    }
+    if (this.pendingDigits) this.commitPending(true)
+    if (isDigit && mapped !== undefined) {
+      e.preventDefault()
+      this.setCell(this.cursor, mapped)
+      this.moveCursor(1, 0)
+      return true
     }
     if (k === '.' || k === 'Backspace' || k === 'Delete' || k === ' ') {
       e.preventDefault()

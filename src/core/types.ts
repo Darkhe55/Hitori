@@ -115,6 +115,12 @@ export interface GameMeta {
 export interface CustomSupport {
   /** 点击循环的值序列（null 表示空格；0 = Unknown 约定由 core 处理，编辑器不显式出现 0） */
   valueCycle: Array<number | null>
+  /**
+   * 可选：单元格最大可填值（默认 9）。
+   * 大于 9 时编辑器启用「多位数键入」：连续按数字键累积（如 1、2 → 12），
+   * 0.7 秒无输入或移动光标 / 回车 / 关闭编辑器时提交。
+   */
+  maxValue?: number
   /** 编辑器按键 0-9 对应的值：返回 undefined 表示该键不用 */
   keyForDigit(digit: number): number | null | undefined
   /** 编辑器格子显示文案 */

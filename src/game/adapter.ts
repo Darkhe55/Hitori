@@ -45,7 +45,13 @@ const meta = {
   customMaxH: 40,
 }
 
-const VALUE_CYCLE: Array<number | null> = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+/** 自定义题板可输入的最大数字（点击循环 1–20，键盘可直接键入 10–20） */
+const MAX_CUSTOM_NUMBER = 20
+
+const VALUE_CYCLE: Array<number | null> = [
+  null,
+  ...Array.from({ length: MAX_CUSTOM_NUMBER }, (_, i) => i + 1),
+]
 
 function readNumbers(value: unknown, size: number): number[] | null {
   if (typeof value === 'string') return decodeNumbers(value, size)
@@ -64,6 +70,7 @@ function readNumbers(value: unknown, size: number): number[] | null {
 
 const custom: CustomSupport = {
   valueCycle: VALUE_CYCLE,
+  maxValue: MAX_CUSTOM_NUMBER,
 
   keyForDigit: (digit) => {
     if (digit === 0) return null
@@ -75,7 +82,8 @@ const custom: CustomSupport = {
 
   cellClass: (v) => (v == null ? '' : `r${v}`),
 
-  hint: '每格填入一个数字：点击格子输入 1-9，0 清空。载入后可用「求解」检查是否恰好一解。',
+  hint:
+    '每格填入一个数字：点击格子循环 1–20，或直接按 1–9（0.7 秒内连按可键入 10–20，如 1、2 → 12），0 / 退格清空。宽高各 5–40（支持非正方形）。载入后可用「求解」检查是否恰好一解。',
 
   toGrid: (p) => {
     const numbers = (p as HitoriPuzzle).numbers
@@ -88,7 +96,9 @@ const custom: CustomSupport = {
   },
 
   makePuzzle: (w, h, grid, existingId) => {
-    const numbers = grid.map((v) => (typeof v === 'number' && v >= 1 ? v : 0))
+    const numbers = grid.map((v) =>
+      typeof v === 'number' && v >= 1 && v <= MAX_CUSTOM_NUMBER ? Math.floor(v) : 0,
+    )
     return {
       id: existingId ?? `${meta.customIdPrefix}${w}x${h}-${Date.now()}`,
       name: `自定义 · ${w}×${h}`,
