@@ -40,8 +40,8 @@ export function cloneState(state: GameState): HitoriState {
 export function cycleValue(state: GameState, target: HitTarget): number {
   const s = asHitoriState(state)
   const v = s.cells[target.index] ?? EMPTY
-  if (v === EMPTY) return BLACK
-  if (v === BLACK) return WHITE
+  // 左键：空/负面(白) → 正面(黑)；正面 → 空
+  if (v === EMPTY || v === WHITE) return BLACK
   return EMPTY
 }
 
